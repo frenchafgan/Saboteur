@@ -33,6 +33,9 @@ def mcts_agent_program(percepts, actuators, time_limit=5):
                 optimal_move = None 
             # optimal_move = MCTS_functions.new_mcts(root, turn, time_limit)
             
+            # result = MCTS_random_playout(initial_node=some_node, max_iterations=2000)
+            # result = MCTS_random_playout(env=some_environment, max_iterations=2000)
+            
             elapsed_time = time.time() - start_time  # Calculate elapsed time
             print(f"Debug: MCTS completed in {elapsed_time:.2f} seconds.")
             

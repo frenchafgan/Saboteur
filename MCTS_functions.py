@@ -45,177 +45,92 @@ def uct_selection_policy(node, target_player, C=1.414):
     return best_node
 
 
-# def MCTS_random_playout(initial_node, max_iterations=200):
-    
-#     """
-#     Conducts a random playout from the given initial node until a terminal state is reached or the maximum number of iterations is exceeded.
-#     Returns the winner of the playout.
-    
-#     This random_playout function has been implemented with the random_playout function as reference during the lectures and 
-#     in the tic-tac-toe workshops for week 4 for the unit COSC550.      
-    
-#     Args:
-#     - initial_node: the node from which to start the playout
-#     - max_iterations: the maximum number of iterations to perform before stopping the playout
-    
-#     Returns:
-#     - the winner of the playout (either 1, -1, or 0)
-#     """
-    
-#     current_playout_state = initial_node.get_state() 
-#     iterations = 0
-#     while not SaboteurBaseEnvironment.is_terminal(current_playout_state):
-#         if iterations >= max_iterations:
-#             break
-#         env = ()
-#         possible_moves = SaboteurBaseEnvironment.get_legal_actions(current_playout_state, SaboteurBaseEnvironment.game_state)
-        
-#         if available_actions in possible_moves and random.random() < 0.2:
-#             available_actions = []
-#         else:
-#             action = random.choice(possible_moves)
-        
-#         current_playout_state = SaboteurBaseEnvironment.transition_result(current_playout_state, action)
-#         iterations += 1
-    
+def MCTS_random_playout(initial_node=None, max_iterations=2000, env=None):
+    """
+    Conducts a random playout from the given initial node until a terminal state is reached or the maximum number of iterations is exceeded.
+    Returns the winner of the playout.
 
-#     return SaboteurBaseEnvironment.get_winner(current_playout_state)
+    This random_playout function has been implemented with the random_playout function as reference during the lectures and 
+    in the tic-tac-toe workshops for week 4 for the unit COSC550.      
 
-# def MCTS_random_playout(self,initial_node, max_iterations=200):
-    
-#     """
-#     Conducts a random playout from the given initial node until a terminal state is reached or the maximum number of iterations is exceeded.
-#     Returns the winner of the playout.
-    
-#     This random_playout function has been implemented with the random_playout function as reference during the lectures and 
-#     in the tic-tac-toe workshops for week 4 for the unit COSC550.      
-    
-#     Args:
-#     - initial_node: the node from which to start the playout
-#     - max_iterations: the maximum number of iterations to perform before stopping the playout
-    
-#     Returns:
-#     - the winner of the playout (either 1, -1, or 0)
-#     """
-#     env = SaboteurBaseEnvironment()
-#     current_playout_state = env.get_game_state()
-#     current_player = env.current_player._agent_name 
-#     iterations = 0
-#     while not env.is_terminal():
-#         if iterations >= max_iterations:
-#             break
-            
-#         possible_moves = env.get_legal_actions(current_player, current_playout_state)
-#         available_actions = env.available_actions
-#         if available_actions in possible_moves and random.random() < 0.2:
-#             available_actions = {}
-#         else:
-#             action = random.choice(possible_moves)
-        
-#         current_playout_state = SaboteurBaseEnvironment.transition_result(current_playout_state, action)
-#         iterations += 1
-    
+    Args:
+    - initial_node: the node from which to start the playout (optional)
+    - max_iterations: the maximum number of iterations to perform before stopping the playout
+    - env: the environment object (optional)
 
-#     return SaboteurBaseEnvironment.get_winner(current_playout_state)
-
-def MCTS_random_playout(self, initial_node, max_iterations=2000):
-    env = SaboteurBaseEnvironment()
-    current_playout_state = env.get_game_state()
-    current_player = env.current_player._agent_name 
+    Returns:
+    - the winner of the playout (either 1, -1, or 0)
+    """
+    
+    if env is None:
+        env = SaboteurBaseEnvironment()
+    
+    if initial_node is not None:
+        current_playout_state = initial_node.get_state()
+    else:
+        current_playout_state = env.get_game_state()
+    
     iterations = 0
     
     while not env.is_terminal():
         if iterations >= max_iterations:
             break
-            
+        
         possible_moves = env.get_legal_actions(env.current_player)
         available_actions = env.available_actions
         
         # Check if all available_actions are in possible_moves
         if set(available_actions).issubset(set(possible_moves)):
             available_actions = {}
-            print(available_actions)
         else:
-            action = random.choice(available_actions)
-        current_playout_state = SaboteurBaseEnvironment.transition_result(current_playout_state, action)
+            action = random.choice(possible_moves)
+        
+        current_playout_state = env.transition_result(current_playout_state, action)
         iterations += 1
     
-    return SaboteurBaseEnvironment.get_winner()
+    return env.get_winner()
 
 
 
-# def new_mcts(root_node, target_player, max_time=20):
-#     """
-#     Runs the Monte Carlo Tree Search algorithm to select the best move for the given player.
+def new_mcts(root_node, target_player, max_time=20, env=None):
+    """
+    Runs the Monte Carlo Tree Search algorithm to select the best move for the given player.
     
-#     This random_playout function has been implemented with the random_playout function as reference discussed during the lectures and 
-#     in the tic-tac-toe workshops for week 4 for the unit COSC550.      
+    This random_playout function has been implemented with the random_playout function as reference discussed during the lectures and 
+    in the tic-tac-toe workshops for week 4 for the unit COSC550.      
 
-#     Args:
-#         root_node (Node): The root node of the search tree.
-#         target_player (int): The player for whom the best move is to be selected.
-#         max_time (float): The maximum time (in seconds) to run the search.
+    Args:
+        root_node (Node): The root node of the search tree.
+        target_player (int): The player for whom the best move is to be selected.
+        max_time (float): The maximum time (in seconds) to run the search.
+        env (SaboteurBaseEnvironment): The environment object (optional).
 
-#     Returns:
-#         int: The best move selected by the algorithm.
-#     """
-#     start_time = time.time()
-    
-#     while (time.time() - start_time) < max_time:
-#         current_node = root_node
-#         while not SaboteurBaseEnvironment.is_terminal(current_node.get_state()) and not current_node.is_leaf_node():
-#             current_node = uct_selection_policy(current_node, target_player)
-#         env = SaboteurBaseEnvironment()
-#         selected_node = current_node
-#         legal_moves = SaboteurBaseEnvironment.get_legal_actions(env.current_player, env.game_state) 
-        
-#         for a in legal_moves:
-#             if not selected_node.was_action_expanded(a):
-#                 successor_state = SaboteurBaseEnvironment.transition_result(selected_node.get_state(), a)  # changed .state to .get_state()
-#                 selected_node.add_successor(successor_state, a)
-        
-#         winner = MCTS_random_playout(selected_node)
-#         if winner is None:
-#             winner = target_player
-
-#         selected_node.backpropagate(winner)      
-
-#     best_node = None
-#     best_ratio = -1
-#     for successor in root_node.get_successors():
-#         ratio = successor.wins(target_player) / successor.n()
-#         if ratio > best_ratio:
-#             best_node = successor
-#             best_ratio = ratio
-
-    
-#     return best_node.get_action() if best_node else None
-
-def new_mcts(root_node, target_player, max_time=20):
+    Returns:
+        int: The best move selected by the algorithm.
+    """
     start_time = time.time()
+    
+    if env is None:
+        env = SaboteurBaseEnvironment()
     
     while (time.time() - start_time) < max_time:
         current_node = root_node
-        while not SaboteurBaseEnvironment.is_terminal(current_node.get_state()) and not current_node.is_leaf_node():
+        while not env.is_terminal(current_node.get_state()) and not current_node.is_leaf_node():
             current_node = uct_selection_policy(current_node, target_player)
-        
-        # Create a new environment instance and set its state
-        env = SaboteurBaseEnvironment()
-        env.game_state = current_node.get_state()
         
         selected_node = current_node
         try:
-             legal_moves = env.get_available_actions( env.current_player)
+            legal_moves = env.get_legal_actions(env.current_player)
         except TypeError as e:
             print(f"TypeError occurred: {e}")
             legal_moves = []      
-            
+        
         for a in legal_moves:
             if not selected_node.was_action_expanded(a):
-                successor_state = env.transition_result(env.current_player)
+                successor_state = env.transition_result(current_node.get_state(), a)
                 selected_node.add_successor(successor_state, a)
         
-        winner = MCTS_random_playout(selected_node, root_node)
+        winner = MCTS_random_playout(selected_node)
         if winner is None:
             winner = target_player
 

@@ -7,7 +7,7 @@ import random
 
 class GameBoard():
 
-    def __init__(self, agent, start_x=6, start_y=10, goal_positions=None, action_chooser=None):
+    def __init__(self, start_x=6, start_y=10, goal_positions=None, action_chooser=None):
         self._board = GridMap(20, 20, default_value=None)
         start_card = PathCard.cross_road(special_card='start')
         self._board.set_item_value(start_x, start_y, start_card)
@@ -130,71 +130,41 @@ class GameBoard():
             self.sabenv.draw_card(current_player)
             self.sabenv.next_player()
  
+    
+    
+    
     def add_path_card(self, x, y, path_card, skip_validation=False, current_player=None, game_state=None):
-        # print(f"Attempting to add a path card at ({x}, {y})")
-        # print("Path card properties:", path_card.__dict__)
-        # print(f"Card successfully placed at {x}, {y}.")
-
-        # print("Board state before adding the card:")
+        if not self.validate_card_placement(x, y, path_card):
+          return self.handle_invalid_placement(current_player, game_state)
         
+        self._board.set_item_value(x, y, path_card)
+        
+        if not self.validate_card_connection(x, y, path_card, current_player, game_state):
+            return self.handle_invalid_placement(current_player, game_state)
+        
+        if not skip_validation and not self.dfs(self.start_x, self.start_y, x, y, [[False]*20 for _ in range(20)]):
+            self._board.set_item_value(x, y, None)
+            return self.handle_invalid_placement(current_player, game_state)
+        
+        return True
+
+    def validate_card_placement(self, x, y, path_card):
         assert isinstance(path_card, PathCard), "The parameter path_card must be an instance of the class PathCard"
         if self._board.get_item_value(x, y) is not None:
             print(f"There is already another card on the board at coordinates ({x}, {y}).")
-            return self.handle_invalid_placement(current_player, game_state)
+            return False
+        return True
 
-        relative_position = self._board.set_item_value(x, y, path_card)
-            
-        # Check if the new card connects with adjacent cards
+    def validate_card_connection(self, x, y, path_card, current_player, game_state):
         for dx, dy, current_exit, next_exit in [(-1, 0, 'north', 'south'), (1, 0, 'south', 'north'), (0, -1, 'west', 'east'), (0, 1, 'east', 'west')]:
             neighbor_x, neighbor_y = x + dx, y + dy
             neighbor_card = self._board.get_item_value(neighbor_x, neighbor_y)
-            if neighbor_card is not None:
-                if not self.can_connect(path_card, neighbor_card, current_exit):
-                    print("Invalid placement. The new card does not connect with an adjacent card.")
-                    return self.handle_invalid_placement(current_player, game_state)
-            # print("Board state after adding the card: {path_card}}")
-            # print(self._board.get_map())        
-         
-        if self.is_initialized:
-            if self.can_connect(PathCard, neighbor_card, relative_position):  
-                tunnel = x, y
-                print(f"Card successfully placed at {x}, {y} by {current_player}.")
-                print(self._board.get_map())
-            
-                # Check for a valid tunnel (implement this check in your own way)
-              
-                if PathCard._is_valid_tunnel(tunnel):
-                    print("A valid tunnel has been formed.")
-                    print(self._board.get_map())
-
-                else:
-                    print("No valid tunnel formed.")
-                    
-            else:
-                print(f"Failed to place card at {x}, {y}.")
-            
-        # Checking for a winning condition if the adjacent card is a GoalCard
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Left, Right, Up, Down
-            neighbor_x, neighbor_y = x + dx, y + dy
-            neighbor_card = self._board.get_item_value(neighbor_x, neighbor_y)
-            if isinstance(neighbor_card, GoalCard):
-                neighbor_card.reveal_card()
-                if neighbor_card.is_gold() and self.dfs(self.start_x, self.start_y, neighbor_x, neighbor_y, [[False]*20 for _ in range(20)]):
-                    print("Gold found. Gold-Diggers win!")
-                    return True
-
-        if not skip_validation:
-            visited = [[False for _ in range(20)] for _ in range(20)]
-            if not self.dfs(self.start_x, self.start_y, x, y, visited):
-                print("DFS failed. Board state:")
-                print(self._board.get_map())
-                self._board.set_item_value(x, y, None)
-                return self.handle_invalid_placement(current_player, game_state)
-            else:
-                print("DFS succeeded.")
-        print(f"Successfully added the path card at ({x}, {y})")
-        
+            if neighbor_card is not None and not self.can_connect(path_card, neighbor_card, current_exit):
+                print("Invalid placement. The new card does not connect with an adjacent card.")
+                return False
         return True
+    
+    
     
     
     def handle_invalid_placement(self, current_player, game_state):

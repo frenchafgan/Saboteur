@@ -1,6 +1,7 @@
 from une_ai.models import MCTSGraphNode, Agent
 from card import PathCard, ActionCard
 import random
+import math
 
 class MCTSAgent(Agent):
     def __init__(self, role, agent_program, num_simulations=1000, ucb1_const=2):
@@ -33,13 +34,13 @@ class MCTSAgent(Agent):
     #     return player.hand 
         
 
-    # def ucb1(self, parent_node):
-    #     parent_visits = parent_node.n()
-    #     return max(
-    #         parent_node.get_successors(),
-    #         key=lambda child_node: (child_node.wins(self.role) / child_node.n()) +
-    #                                 math.sqrt(self.ucb1_const * math.log(parent_visits) / child_node.n()),
-    #     )
+    def ucb1(self, parent_node):
+        parent_visits = parent_node.n()
+        return max(
+            parent_node.get_successors(),
+            key=lambda child_node: (child_node.wins(self.role) / child_node.n()) +
+                                    math.sqrt(self.ucb1_const * math.log(parent_visits) / child_node.n()),
+        )
   
     
     def get_action_list(self, current_player, saboteur_env):
@@ -65,7 +66,7 @@ class MCTSAgent(Agent):
                 new_env.apply_action(game_state, player, action)
                 current_node.add_successor(new_env, action)
 
-            # Simulation (Rollout)
+           
             child_node = random.choice(current_node.get_successors())
             while not current_env.is_terminal():
                 available_actions = current_env.get_available_actions(current_player)
