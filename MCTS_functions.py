@@ -115,7 +115,7 @@ def new_mcts(root_node, target_player, max_time=20, env=None):
     
     while (time.time() - start_time) < max_time:
         current_node = root_node
-        while not env.is_terminal(current_node.get_state()) and not current_node.is_leaf_node():
+        while not env.is_terminal() and not current_node.is_leaf_node():
             current_node = uct_selection_policy(current_node, target_player)
         
         selected_node = current_node
@@ -127,7 +127,7 @@ def new_mcts(root_node, target_player, max_time=20, env=None):
         
         for a in legal_moves:
             if not selected_node.was_action_expanded(a):
-                successor_state = env.transition_result(current_node.get_state(), a)
+                successor_state = env.transition_result(current_node.get_state())
                 selected_node.add_successor(successor_state, a)
         
         winner = MCTS_random_playout(selected_node)

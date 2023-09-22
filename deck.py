@@ -62,17 +62,17 @@ class Deck():
         drawn_cards = [self._deck.pop() for _ in range(num_cards)]
         return drawn_cards if num_cards > 1 else (drawn_cards[0] if drawn_cards else None)
 
-    def distribute_cards(self, players):
-        # print(f"Deck before distribution: {self._deck}")
-        for player in players:
-            player._sensors['hand-sensor']['value'] = self._deck[:4]
-            self._deck = self._deck[4:]
-            # print(f"Cards distributed to {player}: {player._sensors['hand-sensor']['value']}")
-            # print(f"Deck after distribution: {self._deck}")
+    # def distribute_cards(self, players):
+    #     # print(f"Deck before distribution: {self._deck}")
+    #     for player in players:
+    #         player._sensors['hand-sensor']['value'] = self._deck[:4]
+    #         self._deck = self._deck[4:]
+    #         # print(f"Cards distributed to {player}: {player._sensors['hand-sensor']['value']}")
+    #         # print(f"Deck after distribution: {self._deck}")
         
 
     def is_empty(self):
-        return len(self.deck._deck) == 0
+        return len(self._deck) == 0
     
     def get_deck(self):
         return self._deck

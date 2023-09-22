@@ -16,22 +16,10 @@ class SaboteurBaseEnvironment(GameEnvironment):
         sys.setrecursionlimit(10000)
 
        # Initialize game board and deck
-        self._board = GameBoard(mcts_agent_program)
-    
+        self._board = GameBoard()
         self.deck = Deck()
-        self.discard_pile = []
-        self.hand = []
-        
-        # Initialize sensors and role
-        self._sensors = {
-            'game-board-sensor': {'value': None}, 
-            'role-sensor': {'value': None},
-            'hand-sensor': {'value': []},
-            'sabotaged': {'value': False},
-            'turn-taking-indicator': {'value': None}
-        }
-        self.role = None
-        
+        self.discard_pile = []      
+
         # Get the grid map from the game board
         self.board = GameBoard.get_grid_map(self)
         
@@ -46,40 +34,28 @@ class SaboteurBaseEnvironment(GameEnvironment):
         self.current_player_index = 0
 
         for index, role in enumerate(selected_roles):
-            mcts_agent_instance = MCTSAgent(role, mcts_agent_program, num_simulations=1000, ucb1_const=2)
-            self.players.append(mcts_agent_instance)
+            # mcts_agent_instance = MCTSAgent(role, mcts_agent_program, num_simulations=1000, ucb1_const=2)
+            player_instance = SaboteurPlayer(f'Player {index + 1}', mcts_agent_program, role)
+            # Distribute cards and set initial game state
+         # Distribute cards and set initial game state
+            for giveCard in range(0, 4):
+                self.draw_card(player_instance)
+            self.players.append(player_instance)
         
-        # Distribute cards and set initial game state
-        self.deck.distribute_cards(self.players)
         self.rounds = 0
         self.scores = {}
-        self.game_state = {
-            'game-board-sensor': {'value': ['game-board'], 'validation-function': lambda x: True},
-            'deck': self.deck,
-            'rounds': self.rounds,
-            'scores': self.scores,
-            'current_player_index': self.current_player_index,  # Added this line to include current_player_index in game_state
-            'players': self.players
-            }
         
         # Initialize the current player and update sensors
         self.current_player = self.players[self.current_player_index]
-        self.role = self.current_player.role
-        self.hand = self.current_player._sensors['hand-sensor']['value']
         
-        self._sensors['role-sensor']['value'] = self.role
-        self._sensors['hand-sensor']['value'] = self.hand
-        self._sensors['game-board-sensor']['value'] = self.board
-        
-        
-        
-        # Define available actions
-        self.available_actions = ['place-path-card', 'use-action-card', 'discard-card', 'pass-turn']
- 
- 
  
     def is_terminal(self):
-            # Check if the gold goal card is revealed
+        #check to see if players have cards in their hands
+        for player in self.players:
+            if len(player._sensors['hand-sensor']['value']) == 0:
+                return True
+       
+        # Check if the gold goal card is revealed
         for x, y in [(14, 8), (14, 10), (14, 12)]:
             card = (x, y)
             if isinstance(card, GoalCard) and card.is_gold and card.reveal_card():
@@ -89,8 +65,6 @@ class SaboteurBaseEnvironment(GameEnvironment):
         if len([Deck.get_deck]) == 0:
             return True
         return False
-        
-
 
     def draw_card(self, player):
         # print(f"Type of player object: {type(player)}")
@@ -101,21 +75,29 @@ class SaboteurBaseEnvironment(GameEnvironment):
             
         if not self.deck.is_empty():
             new_card = self.deck.draw()
-            player._sensors['hand-sensor']['value'].append(new_card)
-            
+            player.hand.append(new_card)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # def draw_initial_cards(self, players):
+    #     if not isinstance(players, list):
+    #         players = [players]
 
-    def draw_initial_cards(self, players):
-        if not isinstance(players, list):
-            players = [players]
-
-        for player in players:
-            # print(f"Type of player object: {type(player)}")
-            # print(f"Value of player object: {player._agent_name}")
-            drawn_cards = ["Card1", "Card2", "Card3", "Card4"]
-            player._sensors['hand-sensor']['value'] = drawn_cards
+    #     for player in players:
+    #         # print(f"Type of player object: {type(player)}")
+    #         # print(f"Value of player object: {player._agent_name}")
+    #         drawn_cards = ["Card1", "Card2", "Card3", "Card4"]
+    #         player._sensors['hand-sensor']['value'] = drawn_cards
 
   
-            # self.draw_card(player)
+    #         # self.draw_card(player)
 
 
     def get_game_state(self):

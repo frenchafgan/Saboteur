@@ -41,7 +41,14 @@ class MCTSAgent(Agent):
             key=lambda child_node: (child_node.wins(self.role) / child_node.n()) +
                                     math.sqrt(self.ucb1_const * math.log(parent_visits) / child_node.n()),
         )
-  
+    
+    def ucb1(self, parent_node):
+        parent_visits = parent_node.n()
+        return max(
+            parent_node.get_successors(),
+            key=lambda child_node: (child_node.wins(self.role) / child_node.n()) +
+                                    math.sqrt(self.ucb1_const * math.log(parent_visits) / child_node.n()),
+        )
     
     def get_action_list(self, current_player, saboteur_env):
         self.root = MCTSGraphNode(saboteur_env, None, None)

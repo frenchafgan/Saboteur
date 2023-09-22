@@ -1,39 +1,52 @@
 from une_ai.models import GridMap
 from card import PathCard, GoalCard, StartingCard, ActionCard
-from deck import Deck
 import random
-# import agent_programs
-
 
 class GameBoard():
 
-    def __init__(self, start_x=6, start_y=10, goal_positions=None, action_chooser=None):
-        self._board = GridMap(20, 20, default_value=None)
-        start_card = PathCard.cross_road(special_card='start')
-        self._board.set_item_value(start_x, start_y, start_card)
-        self.start_x = 6
-        self.start_y = 10
-        self.action_chooser = action_chooser
-        self.is_initialized = False 
-        self.grid = [[None for _ in range(7)] for _ in range(5)]
-        self._deck = Deck()
+    def __init__(self, start_x=6, start_y=10):
+        self._board = GridMap(20, 20, None)
         
-
-
-    def initialize_goal_cards(self):
-        self.is_initialized = True  
-        positions = [(14, 8), (14, 10), (14, 12)]
-        gold_idx = random.choice(range(len(positions)))
+        start_card = PathCard.cross_road(special_card='start')
+        goal_cards = []
+        gold_idx = random.choice([0,1,2])
+        for i in range(3):
+            if gold_idx == i:
+              label = 'gold'
+            else:
+                label = 'goal'
+            goal_cards.append(PathCard.cross_road(special_card=label))
+       
+        self._board.set_item_value(start_x, start_y, start_card)
+        goal_locations = [(14,8),(14,10), (14,12)]
+        
+        for i, goal in enumerate(goal_cards):
+            self._board.set_item_value(goal_locations[i][0], goal_locations[i][1], goal)
+    
    
-
-        for i, (x, y) in enumerate(positions):
-            label = 'gold' if i == gold_idx else 'goal'
-            goal_card = PathCard.cross_road(special_card=label)
-            self._board.set_item_value(x, y, goal_card)
-
-
     def get_board(self):
-        return self.grid
+        return self._board.get_map()
+
+    # TODO
+    # This method does not check if there is a valid path from
+    # the starting card to the new placed card
+    def add_path_card(self, x, y, path_card):
+        # need to return an invalid path card if the card is not valid
+        assert isinstance(path_card, PathCard), "The parameter path_card must be an instance of the class PathCard"
+        assert x >= 0 and x < 20, "The x coordinate must be 0 <= x < 20"
+        assert y >= 0 and y < 20, "The y coordinate must be 0 <= y < 20"
+        assert self._board.get_item_value(x, y) is None, "There is already another card on the board at coordinates ({0}, {1})".format(x, y)
+
+        self._board.set_item_value(x, y, path_card)
+      
+    def remove_path_card(self, x, y):
+        assert x >= 0 and x < 20, "The x coordinate must be 0 <= x < 20"
+        assert y >= 0 and y < 20, "The y coordinate must be 0 <= y < 20"
+        assert self._board.get_item_value(x, y) is not None and not self._board.get_item_value(x, y).is_special_card(), "There is no valid card to remove at coordinates ({0}, {1})".format(x, y)
+
+        self._board.set_item_value(x, y, None)
+
+
 
     def get_grid_map(self):
         return self._board
@@ -53,6 +66,13 @@ class GameBoard():
         if card is None:
             return False
         return True
+    
+    
+    
+    
+    
+    
+    
     
  
     def can_connect(self, pathcard, neighbor_card, relative_position):
@@ -133,6 +153,8 @@ class GameBoard():
     
     
     
+    
+    
     def add_path_card(self, x, y, path_card, skip_validation=False, current_player=None, game_state=None):
         if not self.validate_card_placement(x, y, path_card):
           return self.handle_invalid_placement(current_player, game_state)
@@ -210,47 +232,47 @@ class GameBoard():
             else:
                 print("Invalid choice. Please select again.")
    
-    def action_chooser(self, agent, current_player, game_state):
-        legal_actions = self.sabenv.get_legal_actions(current_player, game_state)
+    # def action_chooser(self, agent, current_player, game_state):
+    #     legal_actions = self.sabenv.get_legal_actions(current_player, game_state)
 
-        print("Legal actions available:")
-        for idx, action in enumerate(legal_actions):
-            print(f"{idx + 1}. {action}")
+    #     print("Legal actions available:")
+    #     for idx, action in enumerate(legal_actions):
+    #         print(f"{idx + 1}. {action}")
         
         
-        choice = agent.choose_action(game_state, current_player, legal_actions)
-        chosen_type = legal_actions[choice]
+    #     choice = agent.choose_action(game_state, current_player, legal_actions)
+    #     chosen_type = legal_actions[choice]
 
-        action_details = {}
+    #     action_details = {}
 
-        if chosen_type == 'place-path-card':
-            # Get the chosen card from the player
-            chosen_card = self.choose_card(current_player)
-            if chosen_card is None:
-                print("No card was chosen. Returning None.")
-                return None
-            # Get the position where the player wants to place the card
-            chosen_position = self.choose_position(chosen_card)
-            if chosen_position is None:
-                print("No valid position found for card. Returning None.")
-                return None
-            action_details = {'type': chosen_type, 'card': chosen_card, 'position': chosen_position}
+    #     if chosen_type == 'place-path-card':
+    #         # Get the chosen card from the player
+    #         chosen_card = self.choose_card(current_player)
+    #         if chosen_card is None:
+    #             print("No card was chosen. Returning None.")
+    #             return None
+    #         # Get the position where the player wants to place the card
+    #         chosen_position = self.choose_position(chosen_card)
+    #         if chosen_position is None:
+    #             print("No valid position found for card. Returning None.")
+    #             return None
+    #         action_details = {'type': chosen_type, 'card': chosen_card, 'position': chosen_position}
 
-        elif chosen_type == 'use-action-card':
-            # Get the chosen card from the player
-            chosen_card = self.choose_card(current_player)
-            if chosen_card is None:
-                print("No card was chosen. Returning None.")
-                return None
-            # Get the target player if any
-            chosen_target = self.choose_target_player()
-            action_details = {'type': chosen_type, 'card': chosen_card, 'target': chosen_target}
+    #     elif chosen_type == 'use-action-card':
+    #         # Get the chosen card from the player
+    #         chosen_card = self.choose_card(current_player)
+    #         if chosen_card is None:
+    #             print("No card was chosen. Returning None.")
+    #             return None
+    #         # Get the target player if any
+    #         chosen_target = self.choose_target_player()
+    #         action_details = {'type': chosen_type, 'card': chosen_card, 'target': chosen_target}
 
-        else:
-            # For 'pass-turn' or any other action type that doesn't require further details
-            action_details = {'type': chosen_type}
+    #     else:
+    #         # For 'pass-turn' or any other action type that doesn't require further details
+    #         action_details = {'type': chosen_type}
 
-        return action_details
+    #     return action_details
 
 
 
@@ -313,14 +335,6 @@ class GameBoard():
                     
         return False  # The gold card was not found
 
-
-
-    def remove_path_card(self, x, y):
-        assert x >= 0 and x < 20, "The x coordinate must be 0 <= x < 20"
-        assert y >= 0 and y < 20, "The y coordinate must be 0 <= y < 20"
-        assert self._board.get_item_value(x, y) is not None and not self._board.get_item_value(x, y).is_special_card(), "There is no valid card to remove at coordinates ({0}, {1})".format(x, y)
-
-        self._board.set_item_value(x, y, None)    
 
     @staticmethod
     def get_exit_direction(card, direction):
