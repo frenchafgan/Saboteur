@@ -111,10 +111,10 @@ class SaboteurBaseEnvironment(GameEnvironment):
                 # Check if it's a PathCard and its _exits are not [0, 0, 0, 0]
                 if isinstance(hand_sensor_value, PathCard) and hand_sensor_value._exits != [0, 0, 0, 0]:
                     # Additional check for all cards in the hand
-                    validCardPlacements = {}
                     if all(hand_sensor_value._exits != [0, 0, 0, 0] and not isinstance(card, ActionCard) for card in current_player.hand):
                     
-                        
+                        validCardPlacements = {}
+
                         cards = current_player.hand
                         print("Debug: Conditions met.")
                         print("Debug: All cards in hand meet the condition.")
@@ -139,7 +139,7 @@ class SaboteurBaseEnvironment(GameEnvironment):
                                     # Rotate it back, so we know that position 0 is this position
                                     card.turn_card()
                     
-                    return validCardPlacements
+                        return validCardPlacements
 
 
     
@@ -431,7 +431,7 @@ class SaboteurBaseEnvironment(GameEnvironment):
     
     def get_next_player(self):
         # current_player_index = self.players.index(self.current_player)
-        next_player_index = (self.current_player_index + 1) % len(self.players)
+        next_player_index = (self.current_player_index + 1) 
         return self.players[next_player_index]
            
     def get_players(self):

@@ -23,22 +23,32 @@ def main():
       
         # Get current player and available actions
         # percepts = env.get_percepts()
-        for env.player in env.players:
-            current_player = env.current_player
+        current_player = env.current_player
+        for current_player in env.players:
+            
             print(f"Current player: {current_player}")
 
             # Choose and validate action
-            available_actions = env.get_legal_actions(current_player)
+            available_actions = SaboteurBaseEnvironment.get_legal_actions(env.current_player)
             # print(f"Chosen action by MCTS: {chosen_action}")  # Logging
             print (f"Available actions: {available_actions}")
             
             #add the first available action to the gameboard
             # chosen_action = available_actions[0]
-            chosen_action = random.choice(available_actions)
+            if available_actions:
+                chosen_action = random.choice(available_actions)
+                GameBoard.add_path_card(chosen_action) 
+            else:
+                if not available_actions and not env.deck.is_empty():
+                    
+                    env.draw_card(current_player)
+                
+            env.get_next_player()
+            
             
             # chosen_action = mcts_agent_program()
             
-            GameBoard.add_path_card(chosen_action)        
+                  
         
             # print(f"Random action chosen: {chosen_action}")
             # print(f"Game board after random action: {env.game_board}")  
@@ -55,12 +65,10 @@ def main():
             # game_state = env.get_game_state()
             
             # # Draw a card if no available actions and deck is not empty
-            if not available_actions and not env.deck.is_empty():
-                env.draw_card(current_player)
+         
             
             # Move to the next player
-            env.get_next_player()
-            
+          
     # End of Game
     if env.get_winner(): 
         winners = env.get_winner()
