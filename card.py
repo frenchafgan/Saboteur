@@ -9,7 +9,8 @@ class ActionCard(Card):
         self._action = action
     
     def get_action(self):
-        return self._action
+        self._action
+        return True
    
     def __str__(self):
         return f"ActionCard({self._action})"
@@ -21,7 +22,7 @@ class InvalidTunnel(Exception):
 
 class PathCard(Card):
     
-    def __init__(self, tunnels, special_card=None, exits = [0,0,0,0]):
+    def __init__(self, tunnels, special_card=None, exits = [0,0,0,0] ):
         assert isinstance(tunnels, list), "The parameter tunnels must be a list of tuples"
         assert special_card in ['start', 'goal', 'gold', None], "The parameter special_card must be either None, start, goal or gold"
 
@@ -163,13 +164,9 @@ class PathCard(Card):
             )
             tunnels.append(new_tunnel)
         
+        self._exits = self._exits[2:] + self._exits[:2] #rotate by 2
         self._tunnels = tunnels
         
-        self.exits = self.exits[2:] + self.exits[:2] #rotate by 2
-        
-        
-        
-    
     def get_tunnels(self):
         return self._tunnels.copy()
     

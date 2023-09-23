@@ -74,7 +74,7 @@ def MCTS_random_playout(initial_node, max_iterations=2000):
 
     iterations = 0
     
-    while not SaboteurBaseEnvironment.is_terminal():
+    while not SaboteurBaseEnvironment.is_terminal(current_playout_state):
         if iterations >= max_iterations:
             break
         
@@ -82,8 +82,8 @@ def MCTS_random_playout(initial_node, max_iterations=2000):
   
         
         # Check if all available_actions are in possible_moves
-        if set(available_actions).issubset(set(possible_moves)):
-            available_actions = {}
+        if 10 in possible_moves and random.random() < 0.2:
+            action = 10
         else:
             action = random.choice(possible_moves)
         
@@ -112,24 +112,18 @@ def new_mcts(root_node, target_player, max_time=20, env=None):
     """
     start_time = time.time()
     
-    if env is None:
-        env = SaboteurBaseEnvironment()
-    
+
     while (time.time() - start_time) < max_time:
         current_node = root_node
-        while not env.is_terminal() and not current_node.is_leaf_node():
+        while not SaboteurBaseEnvironment.is_terminal(current_node.get_state()) and not current_node.is_leaf_node():
             current_node = uct_selection_policy(current_node, target_player)
         
         selected_node = current_node
-        try:
-            legal_moves = env.get_legal_actions(env.current_player)
-        except TypeError as e:
-            print(f"TypeError occurred: {e}")
-            legal_moves = []      
+        available_moves = SaboteurBaseEnvironment.get_legal_actions(selected_node.get_state())
         
-        for a in legal_moves:
+        for a in available_moves:
             if not selected_node.was_action_expanded(a):
-                successor_state = env.transition_result(current_node.get_state())
+                successor_state = SaboteurBaseEnvironment.transition_result(current_node.get_state())
                 selected_node.add_successor(successor_state, a)
         
         winner = MCTS_random_playout(selected_node)
@@ -141,3 +135,5 @@ def new_mcts(root_node, target_player, max_time=20, env=None):
     best_node = max(root_node.get_successors(), key=lambda x: x.wins(target_player) / x.n(), default=None)
     
     return best_node.get_action() if best_node else None
+
+

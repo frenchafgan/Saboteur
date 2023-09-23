@@ -9,14 +9,13 @@ def mcts_agent_program(percepts, actuators, time_limit=10):
     start_time = time.time()  # Record the start time
     # Extract game state from percepts
 
-    board = SaboteurBaseEnvironment.get_percepts()['game-board-sensor']
+    board = percepts['game-board']
     role = SaboteurBaseEnvironment.get_percepts()['role-sensor']
-    turn = SaboteurBaseEnvironment.get_percepts()['turn-taking-indicator']
+    turn = percepts['turn-taking-indicator']
  
     
     game_data = {
         'game-board': board,
-        'role': role,
         'player-turn': turn
     }
     

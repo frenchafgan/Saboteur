@@ -8,8 +8,6 @@
 
 from saboteur_base_environment import SaboteurBaseEnvironment
 from agent_programs import mcts_agent_program
-# from game_logic import GameLogic
-# from MCTSAgent import MCTSAgent
 from game_board import GameBoard
 import random
 
@@ -17,40 +15,36 @@ def main():
     # Initialization
     env = SaboteurBaseEnvironment()
 
-    # Initialize Players using the game_logic method
-    # players = env.players
-  
     # Create an instance of MCTSAgent
-    current_player = env.current_player
-    # percepts = env.get_percepts()
+    # current_player = env.current_player
 
-    # mcts_agent = mcts_agent_program(current_player._actuators, current_player._sensors)
-    
     # Main Game Loop
     while not env.is_terminal():
-        
-        # Update role for MCTSAgent
-        # role = env.current_player.role  # Update if role can change
-        
+      
         # Get current player and available actions
         current_player = env.current_player
         # percepts = env.get_percepts()
-        
+        print(f"Current player: {current_player}")
+       
         # Choose and validate action
-        available_actions = SaboteurBaseEnvironment.get_legal_actions()
+        available_actions = env.get_legal_actions(current_player)
         # print(f"Chosen action by MCTS: {chosen_action}")  # Logging
+        print (f"Available actions: {available_actions}")
         
-        #add a random available action to the gameboard
-        chosen_action = random.choice(available_actions)
-        env.game_board.add_path_card(chosen_action)        
-        print(f"Random action chosen: {chosen_action}")
-        print(f"Game board after random action: {env.game_board}")
-             
+        #add the first available action to the gameboard
+        # chosen_action = available_actions[0]
+        # chosen_action = random.choice(available_actions)
         
+        chosen_action = mcts_agent_program()
         
-        if not env.validate_action(available_actions, current_player):
-            print("Invalid action.")
-            continue  # Skip to the next iteration of the loop
+        GameBoard.add_path_card(chosen_action)        
+      
+        # print(f"Random action chosen: {chosen_action}")
+        # print(f"Game board after random action: {env.game_board}")  
+        
+        # if not env.validate_action(available_actions, current_player):
+        #     print("Invalid action.")
+        #     continue  # Skip to the next iteration of the loop
 
         # # # Apply chosen action
         # # env.apply_action(chosen_action, current_player)
@@ -64,7 +58,7 @@ def main():
             env.draw_card(current_player)
         
         # Move to the next player
-        env.update_to_next_player()
+        env.get_next_player()
         
     # End of Game
     if env.get_winner(): 

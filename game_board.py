@@ -1,6 +1,7 @@
 from une_ai.models import GridMap
 from card import PathCard, GoalCard, StartingCard, ActionCard
 import random
+import copy   
 
 class GameBoard():
 
