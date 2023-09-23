@@ -29,15 +29,18 @@ def main():
             print(f"Current player: {current_player}")
 
             # Choose and validate action
-            available_actions = SaboteurBaseEnvironment.get_legal_actions(env.current_player)
+            available_actions = env.get_legal_actions(current_player)
             # print(f"Chosen action by MCTS: {chosen_action}")  # Logging
             print (f"Available actions: {available_actions}")
             
             #add the first available action to the gameboard
             # chosen_action = available_actions[0]
             if available_actions:
-                chosen_action = random.choice(available_actions)
-                GameBoard.add_path_card(chosen_action) 
+                chosen_card = random.choice(list(available_actions.keys()))
+                chosen_action = available_actions[chosen_card]
+                GameBoard.add_path_card(x=chosen_action[0], y=chosen_action[1], path_card=chosen_card)
+
+
             else:
                 if not available_actions and not env.deck.is_empty():
                     
