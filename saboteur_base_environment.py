@@ -104,8 +104,6 @@ class SaboteurBaseEnvironment(GameEnvironment):
     def get_legal_actions(self, current_player):
         print("Debug: Checking if conditions are met.")
 
-        validCardPlacements = {}
-        cards = current_player.hand
 
         for i in range(0, len(current_player._sensors['hand-sensor']['value'])): 
                 hand_sensor_value = current_player._sensors['hand-sensor']['value'][i]
@@ -113,8 +111,11 @@ class SaboteurBaseEnvironment(GameEnvironment):
                 # Check if it's a PathCard and its _exits are not [0, 0, 0, 0]
                 if isinstance(hand_sensor_value, PathCard) and hand_sensor_value._exits != [0, 0, 0, 0]:
                     # Additional check for all cards in the hand
+                    validCardPlacements = {}
                     if all(hand_sensor_value._exits != [0, 0, 0, 0] and not isinstance(card, ActionCard) for card in current_player.hand):
                     
+                        
+                        cards = current_player.hand
                         print("Debug: Conditions met.")
                         print("Debug: All cards in hand meet the condition.")
                         print("Debug: Inside get_legal_actions with cards =", cards)
@@ -138,7 +139,7 @@ class SaboteurBaseEnvironment(GameEnvironment):
                                     # Rotate it back, so we know that position 0 is this position
                                     card.turn_card()
                     
-        return validCardPlacements
+                    return validCardPlacements
 
 
     
@@ -264,13 +265,7 @@ class SaboteurBaseEnvironment(GameEnvironment):
             'hand-sensor': game_state['hand-sensor']
             
         }
-    
-    # def get_actuators(self):
-    #     return {
-    #         'path-card-handler': self.place_path_card,
-    #         'action-card-handler': self.use_action_card,
-    #         'pass-turn': self.pass_turn
-    #     }
+
 
         
         

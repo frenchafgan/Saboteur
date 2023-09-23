@@ -22,44 +22,45 @@ def main():
     while not env.is_terminal():
       
         # Get current player and available actions
-        current_player = env.current_player
         # percepts = env.get_percepts()
-        print(f"Current player: {current_player}")
-       
-        # Choose and validate action
-        available_actions = env.get_legal_actions(current_player)
-        # print(f"Chosen action by MCTS: {chosen_action}")  # Logging
-        print (f"Available actions: {available_actions}")
-        
-        #add the first available action to the gameboard
-        # chosen_action = available_actions[0]
-        # chosen_action = random.choice(available_actions)
-        
-        chosen_action = mcts_agent_program()
-        
-        GameBoard.add_path_card(chosen_action)        
-      
-        # print(f"Random action chosen: {chosen_action}")
-        # print(f"Game board after random action: {env.game_board}")  
-        
-        # if not env.validate_action(available_actions, current_player):
-        #     print("Invalid action.")
-        #     continue  # Skip to the next iteration of the loop
+        for env.player in env.players:
+            current_player = env.current_player
+            print(f"Current player: {current_player}")
 
-        # # # Apply chosen action
-        # # env.apply_action(chosen_action, current_player)
-        # # game_logic.apply_action_to_game_board(chosen_action)
+            # Choose and validate action
+            available_actions = env.get_legal_actions(current_player)
+            # print(f"Chosen action by MCTS: {chosen_action}")  # Logging
+            print (f"Available actions: {available_actions}")
+            
+            #add the first available action to the gameboard
+            # chosen_action = available_actions[0]
+            chosen_action = random.choice(available_actions)
+            
+            # chosen_action = mcts_agent_program()
+            
+            GameBoard.add_path_card(chosen_action)        
         
-        # # Update game state and player's hand
-        # game_state = env.get_game_state()
-        
-        # # Draw a card if no available actions and deck is not empty
-        if not available_actions and not env.deck.is_empty():
-            env.draw_card(current_player)
-        
-        # Move to the next player
-        env.get_next_player()
-        
+            # print(f"Random action chosen: {chosen_action}")
+            # print(f"Game board after random action: {env.game_board}")  
+            
+            # if not env.validate_action(available_actions, current_player):
+            #     print("Invalid action.")
+            #     continue  # Skip to the next iteration of the loop
+
+            # # # Apply chosen action
+            # # env.apply_action(chosen_action, current_player)
+            # # game_logic.apply_action_to_game_board(chosen_action)
+            
+            # # Update game state and player's hand
+            # game_state = env.get_game_state()
+            
+            # # Draw a card if no available actions and deck is not empty
+            if not available_actions and not env.deck.is_empty():
+                env.draw_card(current_player)
+            
+            # Move to the next player
+            env.get_next_player()
+            
     # End of Game
     if env.get_winner(): 
         winners = env.get_winner()

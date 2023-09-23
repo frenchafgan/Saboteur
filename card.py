@@ -170,34 +170,45 @@ class PathCard(Card):
     def get_tunnels(self):
         return self._tunnels.copy()
     
-    def __str__(self):
-        card_rep = ['   ', '   ', '   ']
-        if self._revealed:
-            for tunnel in self._tunnels:
-                directions = [(tunnel[0], tunnel[1]), (tunnel[1], tunnel[0])]
-                for direction in directions:
-                    tunnel_from = direction[0]
-                    tunnel_to = direction[1]
-                    if tunnel_from == 'north':
-                        card_rep[0] = card_rep[0][:1] + '|' + card_rep[0][2:]
-                        if tunnel_to is not None:
-                            card_rep[1] = card_rep[1][:1] + '┼' + card_rep[1][2:]
-                    elif tunnel_from == 'south':
-                        card_rep[2] = card_rep[2][:1] + '|' + card_rep[2][2:]
-                        if tunnel_to is not None:
-                            card_rep[1] = card_rep[1][:1] + '┼' + card_rep[1][2:]
-                    elif tunnel_from == 'east':
-                        card_rep[1] = card_rep[1][:2] + '—'
-                        if tunnel_to is not None:
-                            card_rep[1] = card_rep[1][:1] + '┼' + card_rep[1][2:]
-                    elif tunnel_from == 'west':
-                        card_rep[1] = '—' + card_rep[1][1:]
-                        if tunnel_to is not None:
-                            card_rep[1] = card_rep[1][:1] + '┼' + card_rep[1][2:]
-        else:
-            return '   \n ? \n   '
-        return '\n'.join(card_rep)
+    # def __str__(self):
+    #     card_rep = ['   ', '   ', '   ']
+    #     if self._revealed:
+    #         for tunnel in self._tunnels:
+    #             directions = [(tunnel[0], tunnel[1]), (tunnel[1], tunnel[0])]
+    #             for direction in directions:
+    #                 tunnel_from = direction[0]
+    #                 tunnel_to = direction[1]
+    #                 if tunnel_from == 'north':
+    #                     card_rep[0] = card_rep[0][:1] + '|' + card_rep[0][2:]
+    #                     if tunnel_to is not None:
+    #                         card_rep[1] = card_rep[1][:1] + '┼' + card_rep[1][2:]
+    #                 elif tunnel_from == 'south':
+    #                     card_rep[2] = card_rep[2][:1] + '|' + card_rep[2][2:]
+    #                     if tunnel_to is not None:
+    #                         card_rep[1] = card_rep[1][:1] + '┼' + card_rep[1][2:]
+    #                 elif tunnel_from == 'east':
+    #                     card_rep[1] = card_rep[1][:2] + '—'
+    #                     if tunnel_to is not None:
+    #                         card_rep[1] = card_rep[1][:1] + '┼' + card_rep[1][2:]
+    #                 elif tunnel_from == 'west':
+    #                     card_rep[1] = '—' + card_rep[1][1:]
+    #                     if tunnel_to is not None:
+    #                         card_rep[1] = card_rep[1][:1] + '┼' + card_rep[1][2:]
+    #     else:
+    #         return '   \n ? \n   '
+    #     return '\n'.join(card_rep)
 
+    def __str__(self):
+        if self._revealed:
+            directionHashset = set()
+            for tunnels in self._tunnels:
+                directionHashset.add(tunnels[0])
+                directionHashset.add(tunnels[1])
+            
+            top = '░' + ('█' if 'north' in directionHashset else '░') + '░'
+            middle = ('█' if 'west' in directionHashset else '░') + ('░' if None in directionHashset else '█') + ('█' if 'east' in directionHashset else '░')
+            bottom = '░' + ('█' if 'south' in directionHashset else '░') + '░'
+        return [top,middle,bottom]
 
 class StartingCard(PathCard):
     def __init__(self):
