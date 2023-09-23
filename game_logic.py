@@ -6,7 +6,7 @@ from game_board import GameBoard
 import random
 
 class GameLogic:
-    def __init__(self, sabenv_instance):
+    def __init__(self):
         self.sabenv = SaboteurBaseEnvironment(mcts_agent_program)  # Pass an instance of SaboteurBaseEnvironment
         self.players = self.initialize_players()
         self.current_player_index = 0
@@ -144,11 +144,5 @@ class GameLogic:
         chosen_card = cards_in_hand[choice]
         
         return chosen_card
-
-    def is_terminal(self):
-        return self.game_board.is_terminal()
-
-    def get_winner(self):
-        return self.sabenv.get_winner()
 
 

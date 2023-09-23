@@ -45,7 +45,7 @@ def uct_selection_policy(node, target_player, C=1.414):
     return best_node
 
 
-def MCTS_random_playout(initial_node=None, max_iterations=2000, env=None):
+def MCTS_random_playout(initial_node, max_iterations=2000):
     """
     Conducts a random playout from the given initial node until a terminal state is reached or the maximum number of iterations is exceeded.
     Returns the winner of the playout.
@@ -62,22 +62,24 @@ def MCTS_random_playout(initial_node=None, max_iterations=2000, env=None):
     - the winner of the playout (either 1, -1, or 0)
     """
     
-    if env is None:
-        env = SaboteurBaseEnvironment()
+    # if env is None:
+    #     env = SaboteurBaseEnvironment()
     
-    if initial_node is not None:
-        current_playout_state = initial_node.get_state()
-    else:
-        current_playout_state = env.get_game_state()
+    # if initial_node is not None:
+    # else:
+    #     current_playout_state = env.get_game_state()
     
+    
+    current_playout_state = initial_node.get_state()
+
     iterations = 0
     
-    while not env.is_terminal():
+    while not SaboteurBaseEnvironment.is_terminal():
         if iterations >= max_iterations:
             break
         
-        possible_moves = env.get_legal_actions(env.current_player)
-        available_actions = env.available_actions
+        possible_moves = SaboteurBaseEnvironment.get_legal_actions(current_playout_state)
+  
         
         # Check if all available_actions are in possible_moves
         if set(available_actions).issubset(set(possible_moves)):
@@ -85,10 +87,10 @@ def MCTS_random_playout(initial_node=None, max_iterations=2000, env=None):
         else:
             action = random.choice(possible_moves)
         
-        current_playout_state = env.transition_result(current_playout_state, action)
+        current_playout_state = SaboteurBaseEnvironment.transition_result(current_playout_state, action)
         iterations += 1
     
-    return env.get_winner()
+    return SaboteurBaseEnvironment.get_winner()
 
 
 

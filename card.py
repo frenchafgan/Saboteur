@@ -21,12 +21,14 @@ class InvalidTunnel(Exception):
 
 class PathCard(Card):
     
-    def __init__(self, tunnels, special_card=None):
+    def __init__(self, tunnels, special_card=None, exits = [0,0,0,0]):
         assert isinstance(tunnels, list), "The parameter tunnels must be a list of tuples"
         assert special_card in ['start', 'goal', 'gold', None], "The parameter special_card must be either None, start, goal or gold"
 
         self._special_card = special_card
         self._revealed = True
+        self._exits = exits
+
         if special_card:
             # special cards are all cross roads
             cross_road = PathCard.cross_road()
@@ -51,21 +53,24 @@ class PathCard(Card):
                 ('south', 'east'),
                 ('south', 'west'),
                 ('east', 'west')
-            ], special_card=special_card
+            ], special_card=special_card,
+            exits = [1,1,1,1] #N E S W
         )
     
     def vertical_tunnel():
         return PathCard(
             [
                 ('north', 'south')
-            ]
+            ],
+            exits = [1,0,1,0]
         )
     
     def horizontal_tunnel():
         return PathCard(
             [
                 ('east', 'west')
-            ]
+            ], 
+            exits = [0,1,0,1]
         )
     
     def vertical_junction():
@@ -74,7 +79,8 @@ class PathCard(Card):
                 ('north', 'south'),
                 ('north', 'east'),
                 ('south', 'east')
-            ]
+            ],
+            exits = [1,1,1,0]
         )
     
     def horizontal_junction():
@@ -83,21 +89,24 @@ class PathCard(Card):
                 ('east', 'north'),
                 ('west', 'north'),
                 ('east', 'west')
-            ]
+            ],
+            exits = [1,1,0,1]
         )
     
     def turn():
         return PathCard(
             [
                 ('south', 'east')
-            ]
+            ],
+            exits = [0,1,1,0]
         )
     
     def reversed_turn():
         return PathCard(
             [
                 ('south', 'west')
-            ]
+            ],
+            exits = [0,0,1,1]
         )
     
     def dead_end(directions):
@@ -105,6 +114,7 @@ class PathCard(Card):
         for direction in directions:
             tunnels.append((direction, None))
         return PathCard(tunnels)
+    
     
     def _is_valid_tunnel(self, tunnel):
         if not isinstance(tunnel, tuple):
@@ -154,6 +164,11 @@ class PathCard(Card):
             tunnels.append(new_tunnel)
         
         self._tunnels = tunnels
+        
+        self.exits = self.exits[2:] + self.exits[:2] #rotate by 2
+        
+        
+        
     
     def get_tunnels(self):
         return self._tunnels.copy()

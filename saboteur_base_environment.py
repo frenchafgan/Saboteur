@@ -10,6 +10,7 @@ from MCTSAgent import MCTSAgent
 import sys
 
 
+
 class SaboteurBaseEnvironment(GameEnvironment):
     def __init__(self, num_players=8):  # Number of players is always 8
         from agent_programs import mcts_agent_program
@@ -35,7 +36,7 @@ class SaboteurBaseEnvironment(GameEnvironment):
 
         for index, role in enumerate(selected_roles):
             # mcts_agent_instance = MCTSAgent(role, mcts_agent_program, num_simulations=1000, ucb1_const=2)
-            player_instance = SaboteurPlayer(f'Player {index + 1}', mcts_agent_program, role)
+            player_instance = SaboteurPlayer(f'Player {index + 1}',  role) #mcts_agent_program,
             # Distribute cards and set initial game state
          # Distribute cards and set initial game state
             for giveCard in range(0, 4):
@@ -45,14 +46,20 @@ class SaboteurBaseEnvironment(GameEnvironment):
         self.rounds = 0
         self.scores = {}
         
+        self._sensors = {
+            'game-board-sensor' : { 'value':[] }, 
+            'role-sensor' : { 'value':[] }, 
+            'turn-taking-indicator' : { 'value':[] }, 
+            'hand-sensor' : { 'value':[] }, 
+        }
+        
         # Initialize the current player and update sensors
         self.current_player = self.players[self.current_player_index]
         
- 
     def is_terminal(self):
         #check to see if players have cards in their hands
         for player in self.players:
-            if len(player._sensors['hand-sensor']['value']) == 0:
+            if len(player._sensors['hand-sensor']) == 0:
                 return True
        
         # Check if the gold goal card is revealed
@@ -78,26 +85,39 @@ class SaboteurBaseEnvironment(GameEnvironment):
             player.hand.append(new_card)
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    # def draw_initial_cards(self, players):
-    #     if not isinstance(players, list):
-    #         players = [players]
+    def get_legal_actions():
 
-    #     for player in players:
-    #         # print(f"Type of player object: {type(player)}")
-    #         # print(f"Value of player object: {player._agent_name}")
-    #         drawn_cards = ["Card1", "Card2", "Card3", "Card4"]
-    #         player._sensors['hand-sensor']['value'] = drawn_cards
+        cards = SaboteurBaseEnvironment.get_player.hand
 
-  
-    #         # self.draw_card(player)
+        validCardPlacements = {}
+
+        for card in cards:
+            for x in range(0, 20):
+                for y in range(0,20):
+                    if SaboteurBaseEnvironment._board.check_path_card(x,y, card):
+                        if card not in validCardPlacements:
+                            validCardPlacements[card] = []
+                        validCardPlacements[card].append((x,y,0))
+                    
+                    #Rotate and do the same
+                    card.turn_card()
+                    if SaboteurBaseEnvironment._board.check_path_card(x,y, card):
+                        if card not in validCardPlacements:
+                            validCardPlacements[card] = []
+                        validCardPlacements[card].append((x,y,1))
+                    
+                    #Rotate it back, so we know that position 0, is this position
+                    card.turn_card()
+
+
+
+        return validCardPlacements 
+    
+    
+    
+    
+    
+    
 
 
     def get_game_state(self):
@@ -108,8 +128,8 @@ class SaboteurBaseEnvironment(GameEnvironment):
         for player in self.players:
             player_dict = {
                 'name': player._agent_name,
-                'role': player._sensors.get('role-sensor', {}).get('value', None),
-                'hand': player._sensors.get('hand-sensor', {}).get('value', [])
+                'role': player.role,
+                'hand': player.hand
             }
             player_info.append(player_dict)
         
@@ -151,94 +171,36 @@ class SaboteurBaseEnvironment(GameEnvironment):
 
 
 
-    # # changed
-    # def get_legal_actions(self, current_player, game_state):
-    #     # print("Debug: Inside get_legal_actions with current_player = ", current_player, "game_state = ", game_state)
-        
-    #     current_player_dict = game_state['players'][game_state['current_player_index']]
-    #     mcts_agent_program = current_player_dict['agent_program']
-        
-    #     # Create a SaboteurPlayer object from the dictionary
-    #     current_player = SaboteurPlayer(
-    #         agent_name=current_player_dict['name'],
-    #         agent_program= mcts_agent_program,
-    #         role=current_player_dict['role']
-    #     )
-    #     current_player._sensors['hand-sensor']['value'] = current_player_dict['hand']
-        
-    #     available_actions = SaboteurBaseEnvironment.get_available_actions(current_player)
-    
-    #     return self.available_actions 
 
-    def get_legal_actions(self, current_player):
-        # try:
-        #     # Extract current player's dictionary from game_state
-        # current_player_dict = self.game_state.players
-        # except KeyError as e:
-        #     print(f"KeyError: {e} not found in game_state")
-        #     return []
+
+
+
+
+    # def get_legal_actions(self, current_player):
+    #     # try:
+    #     #     # Extract current player's dictionary from game_state
+    #     # current_player_dict = self.game_state.players
+    #     # except KeyError as e:
+    #     #     print(f"KeyError: {e} not found in game_state")
+    #     #     return []
             
-        # Extract agent programa
-        agent = self.current_player._agent_program
+    #     # Extract agent programa
+    #     agent = self.current_player._agent_program
         
-        # Create a SaboteurPlayer object from the dictionary (if necessary)
-        current_player = SaboteurPlayer(
-            agent_name=current_player,
-            agent_program=agent,
-            role=current_player
-        )
+    #     # Create a SaboteurPlayer object from the dictionary (if necessary)
+    #     current_player = SaboteurPlayer(
+    #         agent_name=current_player,
+    #         agent_program=agent,
+    #         role=current_player
+    #     )
         
-        # Update the hand sensor for the current player
-        current_player.hand = current_player._sensors['hand-sensor']['value']
+    #     # Update the hand sensor for the current player
+    #     current_player.hand = current_player._sensors['hand-sensor']['value']
         
-        # Get available actions
-        available_actions = current_player._actions
+    #     # Get available actions
+    #     available_actions = current_player._actions
         
-        return available_actions  # Changed from self.available_actions
-    
-        
-    # def get_legal_actions(self, game_state):
-        
-    #     board = game_state.get('game-board-sensor', {}).get('value', None)
-    #     player_hand = self.hand
-    #     available_actions = []
-
-    #     for card in player_hand:
-    #         if isinstance(card, ActionCard):
-    #             action = card.get_action()
-    #             if action == 'map':
-    #                 for x in range(20):
-    #                     for y in range(20):
-    #                         if board[x][y] is None:
-    #                             available_actions.append(('map', x, y))
-    #                             pass
-    #             elif action == 'sabotage':
-    #                 for x in range(20):
-    #                     for y in range(20):
-    #                         if board[x][y] and not board[x][y].is_goal() and not board[x][y].is_blocked():
-    #                             available_actions.append(('sabotage', x, y))
-    #                             pass
-    #             elif action == 'mend':
-    #                 for x in range(20):
-    #                     for y in range(20):
-    #                         if board[x][y] and board[x][y].is_broken():
-    #                             available_actions.append(('mend', x, y))
-    #             elif action == 'dynamite':
-    #                 for x in range(20):
-    #                     for y in range(20):
-    #                         if board[x][y] and not board[x][y].is_goal() and not board[x][y].is_blocked():
-    #                             available_actions.append(('dynamite', x, y))
-    #                             pass
-
-    #             elif isinstance(card, PathCard):
-    #                 for x in range(20):
-    #                     for y in range(20):
-    #                         if board[x][y] is None:
-    #                             available_actions.append(('place', card, x, y))
-
-
-    #     return available_actions
-        
+    #     return available_actions  # Changed from self.available_actions
 
 
     def find_legal_positions(self, path_card):
@@ -304,6 +266,9 @@ class SaboteurBaseEnvironment(GameEnvironment):
         return self.available_actions
 
 
+
+
+
     def apply_action(self, game_state, player, agent, action):
         # print(f"Debug: Inside apply_action with action = {action}")
         card_to_discard = self.choose_card_to_discard(game_state, player)
@@ -330,6 +295,8 @@ class SaboteurBaseEnvironment(GameEnvironment):
                 
         else:
             print("Invalid action.")
+
+
 
 
     def calculate_card_value(self, card, role, game_board_state):
@@ -400,6 +367,9 @@ class SaboteurBaseEnvironment(GameEnvironment):
             print("Invalid action card.")
             return False
         return True
+    
+    
+    
             
     def update_to_next_player(self):
         
@@ -418,8 +388,9 @@ class SaboteurBaseEnvironment(GameEnvironment):
     def get_players(self):
         return self.players
 
-    def get_winner():
-        if GameBoard.dfs_gold_found():
+    def get_winner(self):
+        # if GameBoard.dfs_gold_found():
+        if PathCard.reveal_card(self):
             return "Gold-Digger"
         else:
             return "Saboteur"
@@ -436,6 +407,8 @@ class SaboteurBaseEnvironment(GameEnvironment):
         while game_board.get_grid_map().get_item_value(x, y) is None or game_board.get_grid_map().get_item_value(x, y).is_special_card():
             x, y = random.randint(0, 19), random.randint(0, 19)
         return (x, y)
+        
+        
         
     def choose_card_to_discard(self, game_state, current_player_index):
         hand = self.get_player_hand()

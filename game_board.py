@@ -25,10 +25,59 @@ class GameBoard():
     
    
     def get_board(self):
-        return self._board.get_map()
+            return self._board.get_map()
 
-    # TODO
-    # This method does not check if there is a valid path from
+    # Check if path card is good!
+    # TODO make sure that when we check for valid cards, we make sure that we have at least one non-special goal card
+    def check_path_card(self, x, y, path_card):
+        # need to return an invalid path card if the card is not valid
+        assert isinstance(path_card, PathCard), "The parameter path_card must be an instance of the class PathCard"
+        assert x >= 0 and x < 20, "The x coordinate must be 0 <= x < 20"
+        assert y >= 0 and y < 20, "The y coordinate must be 0 <= y < 20"
+
+        if self._board.get_item_value(x,y) is not None:
+            return False
+        
+        
+        valid = False
+
+        top = None
+        right = None
+        left = None
+        bottom = None
+
+        if y > 0:
+            top = self._board.get_item_value(x, y-1)
+
+        if y < 19:
+            bottom = self._board.get_item_value(x, y + 1)
+
+        if x > 0:
+            left = self._board.get_item_value(x-1, y)
+
+        if x < 19:
+            right = self._board.get_item_value(x+1, y)
+        
+        if top is not None:
+            valid = top._exits[2] == 1
+        
+        if bottom is not None:
+            valid = valid and bottom._exits[0] == 1
+
+        if left is not None:
+            valid = valid and left._exits[1] == 1
+
+        if right is not None:
+            valid = valid and right._exits[3] == 1
+
+        
+        if valid:
+            return True
+        else:
+            return False
+      
+
+    # This method does check if there is a valid path from
     # the starting card to the new placed card
     def add_path_card(self, x, y, path_card):
         # need to return an invalid path card if the card is not valid
@@ -37,7 +86,9 @@ class GameBoard():
         assert y >= 0 and y < 20, "The y coordinate must be 0 <= y < 20"
         assert self._board.get_item_value(x, y) is None, "There is already another card on the board at coordinates ({0}, {1})".format(x, y)
 
+        # We can do another check here, but we'll rely on the program to do it for
         self._board.set_item_value(x, y, path_card)
+
       
     def remove_path_card(self, x, y):
         assert x >= 0 and x < 20, "The x coordinate must be 0 <= x < 20"
@@ -75,162 +126,162 @@ class GameBoard():
     
     
  
-    def can_connect(self, pathcard, neighbor_card, relative_position):
-        """
-    Check if two cards can connect based on their tunnel openings.
+    # def can_connect(self, pathcard, neighbor_card, relative_position):
+    #     """
+    # Check if two cards can connect based on their tunnel openings.
 
-    Args:
-        pathcard: The first PathCard object.
-        neighbor_card: The second PathCard object.
-        relative_position: A string indicating the relative position of neighbor_card to pathcard (e.g., "north", "south", "east", "west").
+    # Args:
+    #     pathcard: The first PathCard object.
+    #     neighbor_card: The second PathCard object.
+    #     relative_position: A string indicating the relative position of neighbor_card to pathcard (e.g., "north", "south", "east", "west").
         
-    Returns:
-        bool: True if the cards can connect, False otherwise.
-    """
+    # Returns:
+    #     bool: True if the cards can connect, False otherwise.
+    # """
 
-        if relative_position == 'north':
-            return pathcard.is_open('north') and neighbor_card.is_open('south')
-        elif relative_position == 'south':
-            return pathcard.is_open('south') and neighbor_card.is_open('north')
-        elif relative_position == 'east':
-            return pathcard.is_open('east') and neighbor_card.is_open('west')
-        elif relative_position == 'west':
-            return pathcard.is_open('west') and neighbor_card.is_open('east')
-        else:
-            return False  # Invalid relative_position
+    #     if relative_position == 'north':
+    #         return pathcard.is_open('north') and neighbor_card.is_open('south')
+    #     elif relative_position == 'south':
+    #         return pathcard.is_open('south') and neighbor_card.is_open('north')
+    #     elif relative_position == 'east':
+    #         return pathcard.is_open('east') and neighbor_card.is_open('west')
+    #     elif relative_position == 'west':
+    #         return pathcard.is_open('west') and neighbor_card.is_open('east')
+    #     else:
+    #         return False  # Invalid relative_position
 
-    def apply_action_to_game_board(self, player, action):
-            action_type = action['type']
-            current_player = self.sabenv.current_player  # Assuming this is how you get the current player
-            game_state = self.sabenv.get_game_state()  # And this is how you get the current game state
+    # def apply_action_to_game_board(self, player, action):
+    #         action_type = action['type']
+    #         current_player = self.sabenv.current_player  # Assuming this is how you get the current player
+    #         game_state = self.sabenv.get_game_state()  # And this is how you get the current game state
 
-            if action_type == 'place-path-card':
-                card = action['card']
-                position = action.get('position', None)  # Get position from action, if it exists
+    #         if action_type == 'place-path-card':
+    #             card = action['card']
+    #             position = action.get('position', None)  # Get position from action, if it exists
 
-                if isinstance(card, PathCard):  # Assuming PathCard is the name of your path card class
-                    position = self.choose_position(card)
-                    if position is not None:
-                        x, y = position
-                        # Add the path card to the game board
-                        success = self.sabenv.game_board.add_path_card(x, y, card, current_player, game_state)
+    #             if isinstance(card, PathCard):  # Assuming PathCard is the name of your path card class
+    #                 position = self.choose_position(card)
+    #                 if position is not None:
+    #                     x, y = position
+    #                     # Add the path card to the game board
+    #                     success = self.sabenv.game_board.add_path_card(x, y, card, current_player, game_state)
                         
-                        if not success:
-                        # Handle invalid placement
-                            print("Invalid placement. Trying again.")
-                        new_action = self.handle_invalid_placement(current_player, game_state)
-                        if new_action is not None:
-                            self.apply_action_to_game_board(new_action)
-                        return
+    #                     if not success:
+    #                     # Handle invalid placement
+    #                         print("Invalid placement. Trying again.")
+    #                     new_action = self.handle_invalid_placement(current_player, game_state)
+    #                     if new_action is not None:
+    #                         self.apply_action_to_game_board(new_action)
+    #                     return
                         
-                        # Remove the card from the player's hand
-                        self.sabenv.discard_card(current_player, card)
+    #                     # Remove the card from the player's hand
+    #                     self.sabenv.discard_card(current_player, card)
                         
-                    else:
-                        print("No valid position found for card.")
-                else:
-                    print("Error: Expected a PathCard for placing on the board.")
+    #                 else:
+    #                     print("No valid position found for card.")
+    #             else:
+    #                 print("Error: Expected a PathCard for placing on the board.")
 
-            elif action_type == 'use-action-card':
-                card = action['card']
-                if isinstance(card, ActionCard):  # Make sure it's an ActionCard
-                    target = action.get('target', None)
-                    self.sabenv.use_action_card(current_player, self.sabenv.game_board, card, target)
-                    self.sabenv.discard_card(current_player, card)
-                else:
-                    print("Error: Expected an ActionCard for action.")
+    #         elif action_type == 'use-action-card':
+    #             card = action['card']
+    #             if isinstance(card, ActionCard):  # Make sure it's an ActionCard
+    #                 target = action.get('target', None)
+    #                 self.sabenv.use_action_card(current_player, self.sabenv.game_board, card, target)
+    #                 self.sabenv.discard_card(current_player, card)
+    #             else:
+    #                 print("Error: Expected an ActionCard for action.")
                     
 
-            elif action_type == 'pass-turn':
-                self.sabenv.pass_turn(current_player)
+    #         elif action_type == 'pass-turn':
+    #             self.sabenv.pass_turn(current_player)
 
-            else:
-                print("Invalid action type.")
+    #         else:
+    #             print("Invalid action type.")
 
-            self.sabenv.draw_card(current_player)
-            self.sabenv.next_player()
+    #         self.sabenv.draw_card(current_player)
+    #         self.sabenv.next_player()
  
     
     
     
     
     
-    def add_path_card(self, x, y, path_card, skip_validation=False, current_player=None, game_state=None):
-        if not self.validate_card_placement(x, y, path_card):
-          return self.handle_invalid_placement(current_player, game_state)
+    # def add_path_card(self, x, y, path_card, skip_validation=False, current_player=None, game_state=None):
+    #     if not self.validate_card_placement(x, y, path_card):
+    #       return self.handle_invalid_placement(current_player, game_state)
         
-        self._board.set_item_value(x, y, path_card)
+    #     self._board.set_item_value(x, y, path_card)
         
-        if not self.validate_card_connection(x, y, path_card, current_player, game_state):
-            return self.handle_invalid_placement(current_player, game_state)
+    #     if not self.validate_card_connection(x, y, path_card, current_player, game_state):
+    #         return self.handle_invalid_placement(current_player, game_state)
         
-        if not skip_validation and not self.dfs(self.start_x, self.start_y, x, y, [[False]*20 for _ in range(20)]):
-            self._board.set_item_value(x, y, None)
-            return self.handle_invalid_placement(current_player, game_state)
+    #     if not skip_validation and not self.dfs(self.start_x, self.start_y, x, y, [[False]*20 for _ in range(20)]):
+    #         self._board.set_item_value(x, y, None)
+    #         return self.handle_invalid_placement(current_player, game_state)
         
-        return True
+    #     return True
 
-    def validate_card_placement(self, x, y, path_card):
-        assert isinstance(path_card, PathCard), "The parameter path_card must be an instance of the class PathCard"
-        if self._board.get_item_value(x, y) is not None:
-            print(f"There is already another card on the board at coordinates ({x}, {y}).")
-            return False
-        return True
+    # def validate_card_placement(self, x, y, path_card):
+    #     assert isinstance(path_card, PathCard), "The parameter path_card must be an instance of the class PathCard"
+    #     if self._board.get_item_value(x, y) is not None:
+    #         print(f"There is already another card on the board at coordinates ({x}, {y}).")
+    #         return False
+    #     return True
 
-    def validate_card_connection(self, x, y, path_card, current_player, game_state):
-        for dx, dy, current_exit, next_exit in [(-1, 0, 'north', 'south'), (1, 0, 'south', 'north'), (0, -1, 'west', 'east'), (0, 1, 'east', 'west')]:
-            neighbor_x, neighbor_y = x + dx, y + dy
-            neighbor_card = self._board.get_item_value(neighbor_x, neighbor_y)
-            if neighbor_card is not None and not self.can_connect(path_card, neighbor_card, current_exit):
-                print("Invalid placement. The new card does not connect with an adjacent card.")
-                return False
-        return True
+    # def validate_card_connection(self, x, y, path_card, current_player, game_state):
+    #     for dx, dy, current_exit, next_exit in [(-1, 0, 'north', 'south'), (1, 0, 'south', 'north'), (0, -1, 'west', 'east'), (0, 1, 'east', 'west')]:
+    #         neighbor_x, neighbor_y = x + dx, y + dy
+    #         neighbor_card = self._board.get_item_value(neighbor_x, neighbor_y)
+    #         if neighbor_card is not None and not self.can_connect(path_card, neighbor_card, current_exit):
+    #             print("Invalid placement. The new card does not connect with an adjacent card.")
+    #             return False
+    #     return True
     
     
     
     
-    def handle_invalid_placement(self, current_player, game_state):
-        while True:
-            choice = int(input("Invalid placement. Options:\n1. Retry with a different card or position\n2. Use an action card\n3. Pass the turn\nEnter your choice: "))
+    # def handle_invalid_placement(self, current_player, game_state):
+    #     while True:
+    #         choice = int(input("Invalid placement. Options:\n1. Retry with a different card or position\n2. Use an action card\n3. Pass the turn\nEnter your choice: "))
             
-            if choice == 1:
-                # Retry with a different card or position
-                chosen_action = self.action_chooser(current_player, game_state)
-                print(chosen_action)
+    #         if choice == 1:
+    #             # Retry with a different card or position
+    #             chosen_action = self.action_chooser(current_player, game_state)
+    #             print(chosen_action)
 
-                if chosen_action['type'] == 'place-path-card':
-                    #print the chosen action
-                    print(chosen_action)
+    #             if chosen_action['type'] == 'place-path-card':
+    #                 #print the chosen action
+    #                 print(chosen_action)
                 
-                    x, y = chosen_action['position']  
-                    path_card = chosen_action['card']
-                    result = self.add_path_card(x, y, path_card, current_player=current_player, game_state=game_state)
+    #                 x, y = chosen_action['position']  
+    #                 path_card = chosen_action['card']
+    #                 result = self.add_path_card(x, y, path_card, current_player=current_player, game_state=game_state)
             
-                    if result:
-                        print("Successfully placed the card.")
-                        return {'type': 'success'}
-                    else:
-                        print("Failed to place the card.")
-                        continue  # Let the player choose again
-                else:
-                    print("You selected an action other than placing a path card. Please select option 1 if you want to place a path card.")
+    #                 if result:
+    #                     print("Successfully placed the card.")
+    #                     return {'type': 'success'}
+    #                 else:
+    #                     print("Failed to place the card.")
+    #                     continue  # Let the player choose again
+    #             else:
+    #                 print("You selected an action other than placing a path card. Please select option 1 if you want to place a path card.")
 
-            elif choice == 2:
-                # Use an action card
-                chosen_action = self.action_chooser(current_player, game_state)
-                print(chosen_action)
+    #         elif choice == 2:
+    #             # Use an action card
+    #             chosen_action = self.action_chooser(current_player, game_state)
+    #             print(chosen_action)
 
-                if chosen_action['type'] == 'use-action-card':
-                    return chosen_action  # If the user chooses to use an action card, return the new action details.
-                else:
-                    print("You selected an action other than using an action card. Please select option 2 if you want to use an action card.")
+    #             if chosen_action['type'] == 'use-action-card':
+    #                 return chosen_action  # If the user chooses to use an action card, return the new action details.
+    #             else:
+    #                 print("You selected an action other than using an action card. Please select option 2 if you want to use an action card.")
             
-            elif choice == 3:
-                # Pass the turn
-                return {'type': 'pass-turn'}
+    #         elif choice == 3:
+    #             # Pass the turn
+    #             return {'type': 'pass-turn'}
             
-            else:
-                print("Invalid choice. Please select again.")
+    #         else:
+    #             print("Invalid choice. Please select again.")
    
     # def action_chooser(self, agent, current_player, game_state):
     #     legal_actions = self.sabenv.get_legal_actions(current_player, game_state)
